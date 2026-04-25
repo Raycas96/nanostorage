@@ -53,14 +53,14 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test:unit": "vitest run",
     "test:e2e": "playwright test",
-    "lint": "biome check .",
-    "format": "biome check . --write",
-    "changeset": "changeset",
-    "version": "changeset version",
-    "release": "npm run build && changeset publish"
+    "test": "npm run test:unit && npm run test:e2e",
+    "lint": "biome check src tests",
+    "format": "biome format --write src tests",
+    "typecheck": "tsc --noEmit",
+    "size": "gzip -c dist/core/index.js | wc -c",
+    "release": "changeset publish"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0"

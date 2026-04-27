@@ -8,10 +8,10 @@ import {
 
 import {
   initNanoStorage,
-  readRaw,
-  removeKey,
+  readRawValue,
+  removeKeyFromStorage,
   watchKey,
-  writeRaw,
+  writeRawValue,
 } from "@/core";
 
 type SetValueAction<T> = T | ((prev: T | null) => T);
@@ -19,7 +19,11 @@ type SetValueFn<T> = (value: SetValueAction<T>) => void;
 
 const defaultSerializer = <T>(value: T): string => JSON.stringify(value);
 
-const defaultDeserializer = <T>(raw: string): T | null => {
+const defaultDeserializer = <T>(raw: string | null): T | null => {
+  if (raw === null) {
+    return null;
+  }
+
   try {
     return JSON.parse(raw) as T;
   } catch {
@@ -46,7 +50,7 @@ export function useNanoStorage<T>(
   initNanoStorage();
 
   const getSnapshot = (): T | null => {
-    const raw = readRaw(key, area);
+    const raw = readRawValue(key, area);
     if (raw === null) {
       return initialValue;
     }
@@ -68,11 +72,9 @@ export function useNanoStorage<T>(
 
   const setValue: SetValueFn<T> = useCallback(
     (nextValueOrUpdater) => {
-      const rawPrev = readRaw(key, area);
+      const rawPrev = readRawValue(key, area);
       const prev =
-        rawPrev === null
-          ? initialValue
-          : (deserializer(rawPrev) ?? initialValue);
+        rawPrev === null ? initialValue : deserializer(rawPrev) ?? initialValue;
       const nextValue =
         typeof nextValueOrUpdater === "function"
           ? (nextValueOrUpdater as (prev: T | null) => T)(prev)
@@ -80,7 +82,7 @@ export function useNanoStorage<T>(
 
       try {
         const raw = serializer(nextValue);
-        writeRaw(key, raw, area);
+        writeRawValue(key, raw, area);
       } catch {
         console.error(
           `Failed to serialize value for key ${key} in area ${area}`,
@@ -91,7 +93,7 @@ export function useNanoStorage<T>(
   );
 
   const remove = useCallback((): void => {
-    removeKey(key, area);
+    removeKeyFromStorage(key, area);
   }, [key, area]);
 
   return [value, setValue, remove];

@@ -94,12 +94,12 @@ describe("core/index", () => {
 
   it("watchKey returns working unsubscribe and writeRaw triggers watchers", async () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const { watchKey, writeRaw } = await import("@/core/index");
+    const { watchKey, writeRawValue } = await import("@/core/index");
 
     const handler = vi.fn();
     const unsubscribe = watchKey("theme", StorageAreaValues.LOCAL, handler);
 
-    writeRaw("theme", "dark", StorageAreaValues.LOCAL);
+    writeRawValue("theme", "dark", StorageAreaValues.LOCAL);
     expect(handler).toHaveBeenCalledOnce();
     expect(handler).toHaveBeenCalledWith({
       key: "theme",
@@ -110,14 +110,14 @@ describe("core/index", () => {
     });
 
     unsubscribe();
-    writeRaw("theme", "light", StorageAreaValues.LOCAL);
+    writeRawValue("theme", "light", StorageAreaValues.LOCAL);
     expect(handler).toHaveBeenCalledTimes(1);
 
     warnSpy.mockRestore();
   });
 
-  it("readRaw returns null when window is unavailable", async () => {
-    const { readRaw } = await import("@/core/index");
+  it("readRawValue returns null when window is unavailable", async () => {
+    const { readRawValue } = await import("@/core/index");
 
     Object.defineProperty(globalThis, "window", {
       value: undefined,
@@ -125,7 +125,7 @@ describe("core/index", () => {
       writable: true,
     });
 
-    expect(readRaw("theme", StorageAreaValues.LOCAL)).toBeNull();
+    expect(readRawValue("theme", StorageAreaValues.LOCAL)).toBeNull();
   });
 
   it("re-exports types and runtime values from types.ts", async () => {

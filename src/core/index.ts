@@ -62,7 +62,7 @@ export function watchKey(
   return subscribe(area, key, listener);
 }
 
-export function readRaw(key: string, area: StorageArea): string | null {
+export function readRawValue<T>(key: string, area: StorageArea): string | null {
   const storage = getStorage(area);
   if (!storage) {
     return null;
@@ -71,7 +71,11 @@ export function readRaw(key: string, area: StorageArea): string | null {
   return storage.getItem(key);
 }
 
-export function writeRaw(key: string, value: string, area: StorageArea): void {
+export function writeRawValue(
+  key: string,
+  value: string,
+  area: StorageArea,
+): void {
   initNanoStorage();
   const storage = getStorage(area);
   if (!storage) {
@@ -81,7 +85,7 @@ export function writeRaw(key: string, value: string, area: StorageArea): void {
   (storage.setItem as PatchedStorageSetItem)(key, value);
 }
 
-export function removeKey(key: string, area: StorageArea): void {
+export function removeKeyFromStorage(key: string, area: StorageArea): void {
   initNanoStorage();
   const storage = getStorage(area);
   if (!storage) {

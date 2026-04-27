@@ -76,8 +76,10 @@
     "@playwright/test": "^1.59.1",
     "@types/node": "latest",
     "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "happy-dom": "^20.9.0",
     "react": "^19.2.5",
+    "react-dom": "^19.2.5",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",
     "vitest": "^4.1.5"

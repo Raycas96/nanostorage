@@ -63,6 +63,31 @@ describe("core/pubsub", () => {
     expect(listener).not.toHaveBeenCalled();
   });
 
+  it("unsubscribe stops listener from firing", () => {
+    const listener = vi.fn();
+    const unsubscribe = subscribe(StorageAreaValues.LOCAL, "theme", listener);
+
+    unsubscribe();
+    emit(createEvent());
+
+    expect(listener).not.toHaveBeenCalled();
+  });
+
+  it("multiple listeners on same key all receive the event", () => {
+    const listenerA = vi.fn();
+    const listenerB = vi.fn();
+    const event = createEvent();
+
+    subscribe(StorageAreaValues.LOCAL, "theme", listenerA);
+    subscribe(StorageAreaValues.LOCAL, "theme", listenerB);
+    emit(event);
+
+    expect(listenerA).toHaveBeenCalledOnce();
+    expect(listenerB).toHaveBeenCalledOnce();
+    expect(listenerA).toHaveBeenCalledWith(event);
+    expect(listenerB).toHaveBeenCalledWith(event);
+  });
+
   it("continues notifying other listeners when one throws", () => {
     const expectedError = new Error("boom");
     const throwingListener = vi.fn(() => {
@@ -82,5 +107,16 @@ describe("core/pubsub", () => {
       "[nanostorage] Listener threw:",
       expectedError,
     );
+  });
+
+  it("emitting with no subscribers does not throw", () => {
+    expect(() =>
+      emit(
+        createEvent({
+          key: "never-subscribed",
+          area: StorageAreaValues.SESSION,
+        }),
+      ),
+    ).not.toThrow();
   });
 });

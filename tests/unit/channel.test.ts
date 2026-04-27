@@ -36,6 +36,7 @@ class MockBroadcastChannel {
 
 describe("core/channel", () => {
   const originalBroadcastChannel = globalThis.BroadcastChannel;
+  const originalWindow = globalThis.window;
 
   beforeEach(() => {
     vi.resetModules();
@@ -44,7 +45,23 @@ describe("core/channel", () => {
 
   afterEach(() => {
     globalThis.BroadcastChannel = originalBroadcastChannel;
+    Object.defineProperty(globalThis, "window", {
+      value: originalWindow,
+      configurable: true,
+      writable: true,
+    });
     vi.restoreAllMocks();
+  });
+
+  it("returns null in SSR when window is undefined", async () => {
+    Object.defineProperty(globalThis, "window", {
+      value: undefined,
+      configurable: true,
+      writable: true,
+    });
+    const { getChannel } = await import("../../src/core/channel");
+
+    expect(getChannel()).toBeNull();
   });
 
   it("returns the same channel instance on multiple getChannel calls", async () => {

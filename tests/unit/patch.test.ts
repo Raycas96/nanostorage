@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { TAB_ID } from "@/core/channel";
+import { TAB_ID, broadcast } from "@/core/channel";
 import { patchStorage } from "@/core/patch";
 import { emit } from "@/core/pubsub";
 import { StorageAreaValues } from "@/types";
@@ -54,6 +54,7 @@ class MockStorage implements Storage {
 }
 
 const emitMock = vi.mocked(emit);
+const broadcastMock = vi.mocked(broadcast);
 
 describe("core/patch", () => {
   let originalWindow: (typeof globalThis)["window"];
@@ -96,6 +97,21 @@ describe("core/patch", () => {
     });
   });
 
+  it("emits on sessionStorage.setItem", () => {
+    patchStorage(StorageAreaValues.SESSION);
+
+    (window.sessionStorage as ExtendedStorage).setItem("token", "abc");
+
+    expect(emitMock).toHaveBeenCalledOnce();
+    expect(emitMock).toHaveBeenCalledWith({
+      key: "token",
+      newValue: "abc",
+      oldValue: null,
+      area: StorageAreaValues.SESSION,
+      sourceTabId: TAB_ID,
+    });
+  });
+
   it("removeItem emits with newValue: null", () => {
     patchStorage(StorageAreaValues.LOCAL);
     window.localStorage.setItem("k", "v");
@@ -113,12 +129,31 @@ describe("core/patch", () => {
     });
   });
 
-  it("calling patchStorage('local') twice does not double patch", () => {
+  it("removeItem captures oldValue correctly", () => {
     patchStorage(StorageAreaValues.LOCAL);
+    window.localStorage.setItem("k", "old");
+    emitMock.mockClear();
+
+    (window.localStorage as ExtendedStorage).removeItem("k");
+
+    expect(emitMock).toHaveBeenCalledWith({
+      key: "k",
+      newValue: null,
+      oldValue: "old",
+      area: StorageAreaValues.LOCAL,
+      sourceTabId: TAB_ID,
+    });
+  });
+
+  it("double patch is idempotent and keeps same method reference", () => {
     patchStorage(StorageAreaValues.LOCAL);
+    const firstRef = window.localStorage.setItem;
+    patchStorage(StorageAreaValues.LOCAL);
+    const secondRef = window.localStorage.setItem;
 
     (window.localStorage as ExtendedStorage).setItem("k", "v");
 
+    expect(firstRef).toBe(secondRef);
     expect(emitMock).toHaveBeenCalledTimes(1);
   });
 
@@ -150,5 +185,14 @@ describe("core/patch", () => {
 
     expect(() => patchStorage(StorageAreaValues.LOCAL)).not.toThrow();
     expect(() => patchStorage(StorageAreaValues.SESSION)).not.toThrow();
+  });
+
+  it("fromBroadcast=true suppresses broadcast call", () => {
+    patchStorage(StorageAreaValues.LOCAL);
+    broadcastMock.mockClear();
+
+    (window.localStorage as ExtendedStorage).setItem("k", "v", true);
+
+    expect(broadcastMock).not.toHaveBeenCalled();
   });
 });

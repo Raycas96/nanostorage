@@ -1,4 +1,4 @@
-type StorageArea = "local" | "session";
+export type StorageArea = "local" | "session";
 
 export interface StorageBroadcastMessage {
   key: string;

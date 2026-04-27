@@ -8,7 +8,7 @@ const CHANNEL_NAME = "nanostorage:sync";
 /**
  * The ID of the current tab.
  */
-const TAB_ID: string =
+export const TAB_ID: string =
   typeof globalThis.crypto !== "undefined" &&
   typeof globalThis.crypto.randomUUID === "function"
     ? globalThis.crypto.randomUUID()

@@ -1,5 +1,10 @@
 export type StorageArea = "local" | "session";
 
+export enum StorageAreaValues {
+  LOCAL = "local",
+  SESSION = "session",
+}
+
 export interface StorageBroadcastMessage {
   key: string;
   value: string | null;

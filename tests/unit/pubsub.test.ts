@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { StorageChangeEvent } from "@core/types";
+import { StorageAreaValues, type StorageChangeEvent } from "@/types";
 import { emit, subscribe } from "@/core/pubsub";
 
 function createEvent(
@@ -10,7 +10,7 @@ function createEvent(
     key: "theme",
     newValue: "dark",
     oldValue: "light",
-    area: "local",
+    area: StorageAreaValues.LOCAL,
     sourceTabId: "tab-a",
     ...overrides,
   };
@@ -25,7 +25,7 @@ describe("core/pubsub", () => {
     const listener = vi.fn();
     const event = createEvent();
 
-    subscribe("local", "theme", listener);
+    subscribe(StorageAreaValues.LOCAL, "theme", listener);
     emit(event);
 
     expect(listener).toHaveBeenCalledOnce();
@@ -35,7 +35,7 @@ describe("core/pubsub", () => {
   it("does not notify a different key listener", () => {
     const listener = vi.fn();
 
-    subscribe("local", "theme", listener);
+    subscribe(StorageAreaValues.LOCAL, "theme", listener);
     emit(createEvent({ key: "user" }));
 
     expect(listener).not.toHaveBeenCalled();
@@ -44,15 +44,15 @@ describe("core/pubsub", () => {
   it("does not notify a different area listener", () => {
     const listener = vi.fn();
 
-    subscribe("local", "theme", listener);
-    emit(createEvent({ area: "session" }));
+    subscribe(StorageAreaValues.LOCAL, "theme", listener);
+    emit(createEvent({ area: StorageAreaValues.SESSION }));
 
     expect(listener).not.toHaveBeenCalled();
   });
 
   it("unsubscribe is idempotent when called twice", () => {
     const listener = vi.fn();
-    const unsubscribe = subscribe("local", "theme", listener);
+    const unsubscribe = subscribe(StorageAreaValues.LOCAL, "theme", listener);
 
     expect(() => {
       unsubscribe();
@@ -71,8 +71,8 @@ describe("core/pubsub", () => {
     const healthyListener = vi.fn();
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    subscribe("local", "theme", throwingListener);
-    subscribe("local", "theme", healthyListener);
+    subscribe(StorageAreaValues.LOCAL, "theme", throwingListener);
+    subscribe(StorageAreaValues.LOCAL, "theme", healthyListener);
 
     emit(createEvent());
 

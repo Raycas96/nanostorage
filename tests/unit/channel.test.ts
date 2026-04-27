@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { StorageBroadcastMessage } from "@core/types";
+import { StorageAreaValues, type StorageBroadcastMessage } from "@/types";
 import { getChannel } from "@/core/channel";
 
 type MessageListener = (event: MessageEvent<StorageBroadcastMessage>) => void;
@@ -76,7 +76,7 @@ describe("core/channel", () => {
     channel.emit({
       key: "theme",
       value: "dark",
-      area: "local",
+      area: StorageAreaValues.LOCAL,
       sourceTabId: TAB_ID,
     });
     expect(handler).not.toHaveBeenCalled();
@@ -84,7 +84,7 @@ describe("core/channel", () => {
     const foreignMessage: StorageBroadcastMessage = {
       key: "theme",
       value: "light",
-      area: "local",
+      area: StorageAreaValues.LOCAL,
       sourceTabId: "other-tab",
     };
     channel.emit(foreignMessage);
@@ -106,7 +106,7 @@ describe("core/channel", () => {
     channel.emit({
       key: "theme",
       value: "dark",
-      area: "local",
+      area: StorageAreaValues.LOCAL,
       sourceTabId: "other-tab",
     });
 

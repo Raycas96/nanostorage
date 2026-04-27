@@ -16,7 +16,8 @@
     "outDir": "dist",
     "paths": {
       "@/*": ["./src/*"],
-      "@core/*": ["./src/core/*"]
+      "@/core/*": ["./src/core/*"],
+      "@/types": ["./src/core/types.ts"]
     }
   },
   "include": ["src", "tests", "vitest.config.ts"],

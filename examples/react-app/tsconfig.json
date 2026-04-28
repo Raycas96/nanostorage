@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "ignoreDeprecations": "6.0",
+    "baseUrl": ".",
+    "paths": {
+      "@raycas96/nanostorage/react": ["../../src/react/index.ts"],
+      "@raycas96/nanostorage/core": ["../../src/core/index.ts"],
+      "@raycas96/nanostorage": ["../../src/core/index.ts"],
+      "@/types": ["../../src/core/types.ts"],
+      "@/core": ["../../src/core/index.ts"]
+    }
+  },
+  "include": ["src"]
+}

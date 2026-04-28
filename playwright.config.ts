@@ -7,7 +7,7 @@ export default defineConfig({
     baseURL: "http://localhost:3456",
   },
   webServer: {
-    command: "npx serve . -p 3456",
+    command: "python3 -m http.server 3456",
     port: 3456,
     reuseExistingServer: !process.env.CI,
   },

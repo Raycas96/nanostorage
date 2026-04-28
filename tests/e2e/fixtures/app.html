@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>nanostorage E2E</title>
+  </head>
+  <body>
+    <div id="local-value">-</div>
+    <div id="session-value">-</div>
+    <button id="set-local">Set local:theme=dark</button>
+    <button id="remove-local">Remove local:theme</button>
+    <button id="set-session">Set session:token=abc</button>
+    <button id="remove-session">Remove session:token</button>
+
+    <script type="module">
+      import {
+        initNanoStorage,
+        removeKeyFromStorage,
+        watchKey,
+        writeRawValue,
+      } from "/dist/core/index.js";
+
+      initNanoStorage();
+
+      const localDiv = document.getElementById("local-value");
+      const sessionDiv = document.getElementById("session-value");
+
+      const updateLocal = () => {
+        localDiv.textContent = localStorage.getItem("theme") ?? "null";
+      };
+      const updateSession = () => {
+        sessionDiv.textContent = sessionStorage.getItem("token") ?? "null";
+      };
+
+      watchKey("theme", "local", updateLocal);
+      watchKey("token", "session", updateSession);
+      updateLocal();
+      updateSession();
+
+      document.getElementById("set-local").onclick = () =>
+        writeRawValue("theme", "dark", "local");
+      document.getElementById("remove-local").onclick = () =>
+        removeKeyFromStorage("theme", "local");
+      document.getElementById("set-session").onclick = () =>
+        writeRawValue("token", "abc", "session");
+      document.getElementById("remove-session").onclick = () =>
+        removeKeyFromStorage("token", "session");
+    </script>
+  </body>
+</html>

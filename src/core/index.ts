@@ -1,5 +1,6 @@
-import { onBroadcast } from "./channel";
+import { TAB_ID, broadcast, onBroadcast } from "./channel";
 import { patchStorage } from "./patch";
+import { emit } from "./pubsub";
 import { subscribe } from "./pubsub";
 import {
   StorageAreaValues,
@@ -7,14 +8,46 @@ import {
   type UnsubscribeFn,
 } from "@/types";
 
-type PatchedStorageSetItem = (
-  key: string,
-  value: string,
-  fromBroadcast?: boolean,
-) => void;
-type PatchedStorageRemoveItem = (key: string, fromBroadcast?: boolean) => void;
-
 let initialized = false;
+
+const applyMutation = (
+  area: StorageArea,
+  key: string,
+  value: string | null,
+  fromBroadcast: boolean,
+): void => {
+  const storage = getStorage(area);
+
+  if (!storage) {
+    return;
+  }
+
+  const oldValue = storage.getItem(key);
+  const nativeStorageProto = Object.getPrototypeOf(storage) as Storage;
+
+  if (value === null) {
+    nativeStorageProto.removeItem.call(storage, key);
+  } else {
+    nativeStorageProto.setItem.call(storage, key, value);
+  }
+
+  emit({
+    key,
+    newValue: value,
+    oldValue,
+    area,
+    sourceTabId: TAB_ID,
+  });
+
+  if (!fromBroadcast) {
+    broadcast({
+      key,
+      value,
+      area,
+      sourceTabId: TAB_ID,
+    });
+  }
+};
 
 const getStorage = (area: StorageArea): Storage | null => {
   if (typeof window === "undefined") {
@@ -36,20 +69,7 @@ export function initNanoStorage(): void {
   patchStorage(StorageAreaValues.SESSION);
 
   onBroadcast((message) => {
-    const storage = getStorage(message.area);
-    if (!storage) {
-      return;
-    }
-
-    if (message.value === null) {
-      (storage.removeItem as PatchedStorageRemoveItem)(message.key, true);
-    } else {
-      (storage.setItem as PatchedStorageSetItem)(
-        message.key,
-        message.value,
-        true,
-      );
-    }
+    applyMutation(message.area, message.key, message.value, true);
   });
 }
 
@@ -62,7 +82,7 @@ export function watchKey(
   return subscribe(area, key, listener);
 }
 
-export function readRawValue<T>(key: string, area: StorageArea): string | null {
+export function readRawValue(key: string, area: StorageArea): string | null {
   const storage = getStorage(area);
   if (!storage) {
     return null;
@@ -77,20 +97,15 @@ export function writeRawValue(
   area: StorageArea,
 ): void {
   initNanoStorage();
-  const storage = getStorage(area);
-  if (!storage) {
-    return;
-  }
-
-  (storage.setItem as PatchedStorageSetItem)(key, value);
+  applyMutation(area, key, value, false);
 }
 
 export function removeKeyFromStorage(key: string, area: StorageArea): void {
   initNanoStorage();
-  const storage = getStorage(area);
-  if (!storage) {
-    return;
-  }
-
-  (storage.removeItem as PatchedStorageRemoveItem)(key);
+  applyMutation(area, key, null, false);
 }
+
+/** Blueprint / shorthand aliases (same behavior as `*Value` / `*FromStorage`). */
+export const readRaw = readRawValue;
+export const writeRaw = writeRawValue;
+export const removeKey = removeKeyFromStorage;

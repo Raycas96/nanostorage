@@ -1,6 +1,5 @@
-import { TAB_ID, broadcast } from "./channel";
-import { emit } from "./pubsub";
-import { StorageAreaValues, type StorageArea } from "@/types";
+import type { StorageArea } from "./types";
+import { emitStorageMutation, getStorage, mutateStorage } from "./runtime";
 
 type PatchedSetItem = (
   key: string,
@@ -10,25 +9,7 @@ type PatchedSetItem = (
 type PatchedRemoveItem = (key: string, fromBroadcast?: boolean) => void;
 const patchedStorages = new WeakSet<Storage>();
 
-const getStorage = (area: StorageArea): Storage | null => {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  if (area === StorageAreaValues.LOCAL) {
-    return window.localStorage;
-  } else if (area === StorageAreaValues.SESSION) {
-    return window.sessionStorage;
-  }
-
-  return null;
-};
-
 export const patchStorage = (area: StorageArea): void => {
-  if (typeof window === "undefined") {
-    return;
-  }
-
   const storage = getStorage(area);
 
   if (!storage) {
@@ -39,58 +20,21 @@ export const patchStorage = (area: StorageArea): void => {
     return;
   }
 
-  const originalSetItem = storage.setItem.bind(storage);
-  const originalRemoveItem = storage.removeItem.bind(storage);
-
   const patchedSetItem: PatchedSetItem = (
     key: string,
     value: string,
     fromBroadcast = false,
   ) => {
-    const oldValue = storage.getItem(key);
-    originalSetItem(key, value);
-
-    emit({
-      key,
-      newValue: value,
-      oldValue,
-      area,
-      sourceTabId: TAB_ID,
-    });
-
-    if (!fromBroadcast) {
-      broadcast({
-        key,
-        value,
-        area,
-        sourceTabId: TAB_ID,
-      });
-    }
+    const oldValue = mutateStorage(storage, key, value);
+    emitStorageMutation(area, key, value, oldValue, fromBroadcast);
   };
 
   const patchedRemoveItem: PatchedRemoveItem = (
     key: string,
     fromBroadcast = false,
   ) => {
-    const oldValue = storage.getItem(key);
-    originalRemoveItem(key);
-
-    emit({
-      key,
-      newValue: null,
-      oldValue,
-      area,
-      sourceTabId: TAB_ID,
-    });
-
-    if (!fromBroadcast) {
-      broadcast({
-        key,
-        value: null,
-        area,
-        sourceTabId: TAB_ID,
-      });
-    }
+    const oldValue = mutateStorage(storage, key, null);
+    emitStorageMutation(area, key, null, oldValue, fromBroadcast);
   };
 
   Object.defineProperty(storage, "setItem", {

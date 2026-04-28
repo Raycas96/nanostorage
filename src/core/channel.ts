@@ -40,7 +40,6 @@ export function getChannel(): BroadcastChannel | null {
 export function broadcast(message: StorageBroadcastMessage): void {
   const channel = getChannel();
   if (!channel) {
-    console.warn("Cannot broadcast message: Broadcast channel not found");
     return;
   }
   channel.postMessage(message);
@@ -51,7 +50,6 @@ export function onBroadcast(
 ): () => void {
   const channel = getChannel();
   if (!channel) {
-    console.warn("Cannot subscribe to broadcast: Broadcast channel not found");
     return () => {};
   }
 

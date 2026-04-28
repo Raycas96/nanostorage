@@ -1,12 +1,12 @@
-import { TAB_ID, broadcast, onBroadcast } from "./channel";
+import { onBroadcast } from "./channel";
 import { patchStorage } from "./patch";
-import { emit } from "./pubsub";
 import { subscribe } from "./pubsub";
 import {
-  StorageAreaValues,
-  type StorageArea,
-  type UnsubscribeFn,
-} from "@/types";
+  emitStorageMutation,
+  getStorage,
+  mutateStorage,
+} from "./runtime";
+import type { StorageArea, UnsubscribeFn } from "./types";
 
 let initialized = false;
 
@@ -22,41 +22,8 @@ const applyMutation = (
     return;
   }
 
-  const oldValue = storage.getItem(key);
-  const nativeStorageProto = Object.getPrototypeOf(storage) as Storage;
-
-  if (value === null) {
-    nativeStorageProto.removeItem.call(storage, key);
-  } else {
-    nativeStorageProto.setItem.call(storage, key, value);
-  }
-
-  emit({
-    key,
-    newValue: value,
-    oldValue,
-    area,
-    sourceTabId: TAB_ID,
-  });
-
-  if (!fromBroadcast) {
-    broadcast({
-      key,
-      value,
-      area,
-      sourceTabId: TAB_ID,
-    });
-  }
-};
-
-const getStorage = (area: StorageArea): Storage | null => {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  return area === StorageAreaValues.LOCAL
-    ? window.localStorage
-    : window.sessionStorage;
+  const oldValue = mutateStorage(storage, key, value);
+  emitStorageMutation(area, key, value, oldValue, fromBroadcast);
 };
 
 export function initNanoStorage(): void {
@@ -65,8 +32,8 @@ export function initNanoStorage(): void {
   }
 
   initialized = true;
-  patchStorage(StorageAreaValues.LOCAL);
-  patchStorage(StorageAreaValues.SESSION);
+  patchStorage("local");
+  patchStorage("session");
 
   onBroadcast((message) => {
     applyMutation(message.area, message.key, message.value, true);

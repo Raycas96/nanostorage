@@ -52,6 +52,7 @@
   },
   "scripts": {
     "build": "tsup",
+    "build:size": "tsup --config tsup.size.config.ts",
     "dev": "tsup --watch",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
@@ -59,9 +60,22 @@
     "lint": "biome check src tests",
     "format": "biome format --write src tests",
     "typecheck": "tsc --noEmit",
-    "size": "gzip -c dist/core/index.js | wc -c",
+    "size:core": "gzip -c dist/core/index.js | wc -c",
+    "size:react": "gzip -c dist/react/index.js | wc -c",
+    "size:check": "bundlesize",
+    "size": "npm run build:size && npm run size:core && npm run size:react && npm run size:check",
     "release": "changeset publish"
   },
+  "bundlesize": [
+    {
+      "path": "./dist/core/index.js",
+      "maxSize": "1 kB"
+    },
+    {
+      "path": "./dist/react/index.js",
+      "maxSize": "2 kB"
+    }
+  ],
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0"
   },
@@ -77,6 +91,7 @@
     "@types/node": "latest",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "bundlesize": "^0.18.2",
     "happy-dom": "^20.9.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",

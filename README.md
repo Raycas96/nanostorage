@@ -1,4 +1,4 @@
-# nanostorage
+# nanostorage (WIP)
 
 Sub-1kb, zero-dependency, framework-agnostic storage sync for modern web apps.
 
@@ -74,7 +74,12 @@ npm install @raycas96/nanostorage
 ## Vanilla Usage
 
 ```ts
-import { initNanoStorage, watchKey, writeRaw, removeKey } from "@raycas96/nanostorage/core";
+import {
+  initNanoStorage,
+  watchKey,
+  writeRawValue,
+  removeKeyFromStorage,
+} from "@raycas96/nanostorage/core";
 
 initNanoStorage();
 
@@ -82,8 +87,8 @@ const unsub = watchKey("theme", "local", (event) => {
   console.log("theme changed:", event.newValue);
 });
 
-writeRaw("theme", "dark", "local");
-removeKey("theme", "local");
+writeRawValue("theme", "dark", "local");
+removeKeyFromStorage("theme", "local");
 unsub();
 ```
 

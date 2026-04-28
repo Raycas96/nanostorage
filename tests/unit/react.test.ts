@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { renderToString } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { StorageAreaValues } from "@/core/types";
+import { StorageAreaValues } from "@/types";
 
 class MockStorage implements Storage {
   private values = new Map<string, string>();
@@ -47,8 +47,9 @@ describe("react/useNanoStorage", () => {
     originalWindow = globalThis.window;
     originalActEnv = (globalThis as { IS_REACT_ACT_ENVIRONMENT?: unknown })
       .IS_REACT_ACT_ENVIRONMENT;
-    (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT =
-      true;
+    (
+      globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
+    ).IS_REACT_ACT_ENVIRONMENT = true;
     Object.defineProperty(globalThis, "window", {
       value: {
         localStorage: new MockStorage(),
@@ -60,8 +61,9 @@ describe("react/useNanoStorage", () => {
   });
 
   afterEach(() => {
-    (globalThis as { IS_REACT_ACT_ENVIRONMENT?: unknown }).IS_REACT_ACT_ENVIRONMENT =
-      originalActEnv;
+    (
+      globalThis as { IS_REACT_ACT_ENVIRONMENT?: unknown }
+    ).IS_REACT_ACT_ENVIRONMENT = originalActEnv;
     Object.defineProperty(globalThis, "window", {
       value: originalWindow,
       configurable: true,
@@ -72,8 +74,9 @@ describe("react/useNanoStorage", () => {
   it("returns initial value and supports set/update/remove", async () => {
     const useNanoStorage = await getHook();
     let snapshot: string | null = null;
-    let setValue: ((value: string | ((prev: string | null) => string)) => void) | null =
-      null;
+    let setValue:
+      | ((value: string | ((prev: string | null) => string)) => void)
+      | null = null;
     let remove: (() => void) | null = null;
 
     function Consumer(): null {
@@ -116,8 +119,9 @@ describe("react/useNanoStorage", () => {
     const useNanoStorage = await getHook();
     let valueA: string | null = null;
     let valueB: string | null = null;
-    let setA: ((value: string | ((prev: string | null) => string)) => void) | null =
-      null;
+    let setA:
+      | ((value: string | ((prev: string | null) => string)) => void)
+      | null = null;
 
     function A(): null {
       const [value, set] = useNanoStorage<string>("theme", "light");
@@ -162,8 +166,9 @@ describe("react/useNanoStorage", () => {
   it("scopes to session storage when area is session", async () => {
     const useNanoStorage = await getHook();
     let snapshot: string | null = null;
-    let setValue: ((value: string | ((prev: string | null) => string)) => void) | null =
-      null;
+    let setValue:
+      | ((value: string | ((prev: string | null) => string)) => void)
+      | null = null;
 
     function Consumer(): null {
       const [value, set] = useNanoStorage<string>("theme", "light", {
@@ -186,7 +191,7 @@ describe("react/useNanoStorage", () => {
     });
 
     expect(snapshot).toBe("dark");
-    expect(window.sessionStorage.getItem("theme")).toBe("\"dark\"");
+    expect(window.sessionStorage.getItem("theme")).toBe('"dark"');
     expect(window.localStorage.getItem("theme")).toBeNull();
 
     await act(async () => {
@@ -213,7 +218,9 @@ describe("react/useNanoStorage", () => {
       expect(() =>
         renderToString(React.createElement(ServerComponent)),
       ).not.toThrow();
-      expect(renderToString(React.createElement(ServerComponent))).toContain("light");
+      expect(renderToString(React.createElement(ServerComponent))).toContain(
+        "light",
+      );
 
       Object.defineProperty(globalThis, "window", {
         value: oldWindow,

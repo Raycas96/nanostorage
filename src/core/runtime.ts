@@ -1,15 +1,35 @@
 import { TAB_ID, broadcast } from "./channel";
 import { emit } from "./pubsub";
-import type { StorageArea } from "./types";
+import { StorageArea, StorageAreaValues } from "@/types";
 
+/**
+ *
+ * @param area the storage area to get
+ * @returns the storage or null if the window is not defined
+ */
 export const getStorage = (area: StorageArea): Storage | null => {
   if (typeof window === "undefined") {
     return null;
   }
 
-  return area === "local" ? window.localStorage : window.sessionStorage;
+  if (area === StorageAreaValues.LOCAL) {
+    return window.localStorage;
+  }
+
+  if (area === StorageAreaValues.SESSION) {
+    return window.sessionStorage;
+  }
+
+  return null;
 };
 
+/**
+ *
+ * @param storage the storage to mutate
+ * @param key the key to mutate
+ * @param value the value to mutate the key to
+ * @returns the old value of the key
+ */
 export const mutateStorage = (
   storage: Storage,
   key: string,
@@ -27,6 +47,15 @@ export const mutateStorage = (
   return oldValue;
 };
 
+/**
+ *
+ * @param area the storage area to emit the mutation from
+ * @param key the key that was mutated
+ * @param newValue the new value of the key
+ * @param oldValue the old value of the key
+ * @param fromBroadcast
+ * @returns void whether the mutation is from a broadcast
+ */
 export const emitStorageMutation = (
   area: StorageArea,
   key: string,

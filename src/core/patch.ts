@@ -1,14 +1,15 @@
-import type { StorageArea } from "./types";
+import type { StorageArea } from "@/types";
 import { emitStorageMutation, getStorage, mutateStorage } from "./runtime";
 
-type PatchedSetItem = (
-  key: string,
-  value: string,
-  fromBroadcast?: boolean,
-) => void;
 type PatchedRemoveItem = (key: string, fromBroadcast?: boolean) => void;
 const patchedStorages = new WeakSet<Storage>();
 
+/**
+ *
+ * Patch the storage area to emit storage mutations.
+ * @param area the storage area to patch
+ * @returns void
+ */
 export const patchStorage = (area: StorageArea): void => {
   const storage = getStorage(area);
 
@@ -19,6 +20,12 @@ export const patchStorage = (area: StorageArea): void => {
   if (patchedStorages.has(storage)) {
     return;
   }
+
+  type PatchedSetItem = (
+    key: string,
+    value: string,
+    fromBroadcast?: boolean,
+  ) => void;
 
   const patchedSetItem: PatchedSetItem = (
     key: string,

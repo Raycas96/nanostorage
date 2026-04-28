@@ -1,15 +1,23 @@
 import { onBroadcast } from "./channel";
 import { patchStorage } from "./patch";
 import { subscribe } from "./pubsub";
-import {
-  emitStorageMutation,
-  getStorage,
-  mutateStorage,
-} from "./runtime";
-import type { StorageArea, UnsubscribeFn } from "./types";
+import { emitStorageMutation, getStorage, mutateStorage } from "./runtime";
+import type { StorageArea, UnsubscribeFn } from "@/types";
 
+/**
+ * this variabile is used to track if the nano storage has been initialized
+ * to avoid initializing the nano storage multiple times
+ */
 let initialized = false;
 
+/**
+ *
+ * @param area the storage area to apply the mutation to
+ * @param key the key to apply the mutation to
+ * @param value the value to apply the mutation to
+ * @param fromBroadcast whether the mutation is from a broadcast
+ * @returns void
+ */
 const applyMutation = (
   area: StorageArea,
   key: string,
@@ -26,6 +34,11 @@ const applyMutation = (
   emitStorageMutation(area, key, value, oldValue, fromBroadcast);
 };
 
+/**
+ *
+ * Initialize the nano storage.
+ * @returns void
+ */
 export function initNanoStorage(): void {
   if (initialized) {
     return;
@@ -40,6 +53,13 @@ export function initNanoStorage(): void {
   });
 }
 
+/**
+ * Watch a key in a storage area for changes.
+ * @param key
+ * @param area
+ * @param listener
+ * @returns Unsubscribe function
+ */
 export function watchKey(
   key: string,
   area: StorageArea,
@@ -49,6 +69,12 @@ export function watchKey(
   return subscribe(area, key, listener);
 }
 
+/**
+ * Read a raw value from a storage area.
+ * @param key the key to read
+ * @param area the storage area to read from
+ * @returns Raw value or null if the storage is not available
+ */
 export function readRawValue(key: string, area: StorageArea): string | null {
   const storage = getStorage(area);
   if (!storage) {
@@ -58,6 +84,13 @@ export function readRawValue(key: string, area: StorageArea): string | null {
   return storage.getItem(key);
 }
 
+/**
+ *
+ * @param key the key to write
+ * @param value the value to write
+ * @param area the storage area to write to
+ * @returns void
+ */
 export function writeRawValue(
   key: string,
   value: string,
@@ -67,12 +100,13 @@ export function writeRawValue(
   applyMutation(area, key, value, false);
 }
 
+/**
+ *
+ * @param key the key to remove
+ * @param area the storage area to remove from
+ * @returns void
+ */
 export function removeKeyFromStorage(key: string, area: StorageArea): void {
   initNanoStorage();
   applyMutation(area, key, null, false);
 }
-
-/** Blueprint / shorthand aliases (same behavior as `*Value` / `*FromStorage`). */
-export const readRaw = readRawValue;
-export const writeRaw = writeRawValue;
-export const removeKey = removeKeyFromStorage;

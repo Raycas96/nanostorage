@@ -1,4 +1,4 @@
-import type { StorageBroadcastMessage } from "./types";
+import type { StorageBroadcastMessage } from "@/types";
 
 /**
  * The name of the broadcast channel.
@@ -37,6 +37,11 @@ export function getChannel(): BroadcastChannel | null {
   return channelInstance;
 }
 
+/**
+ *
+ * @param message the message to broadcast
+ * @returns void
+ */
 export function broadcast(message: StorageBroadcastMessage): void {
   const channel = getChannel();
   if (!channel) {
@@ -45,6 +50,11 @@ export function broadcast(message: StorageBroadcastMessage): void {
   channel.postMessage(message);
 }
 
+/**
+ *
+ * @param handler the handler to call when a message is received
+ * @returns a function to unsubscribe from the broadcast channel
+ */
 export function onBroadcast(
   handler: (message: StorageBroadcastMessage) => void,
 ): () => void {
@@ -53,6 +63,11 @@ export function onBroadcast(
     return () => {};
   }
 
+  /**
+   *
+   * @param event the message event
+   * @returns void
+   */
   const listener = (event: MessageEvent<StorageBroadcastMessage>) => {
     if (event.data?.sourceTabId !== TAB_ID) {
       handler(event.data);

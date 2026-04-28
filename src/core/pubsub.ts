@@ -3,10 +3,17 @@ import type {
   StorageChangeEvent,
   StorageListener,
   UnsubscribeFn,
-} from "./types";
+} from "@/types";
 
 const subscribers = new Map<StorageArea, Map<string, Set<StorageListener>>>();
 
+/**
+ *
+ * Get the listeners for a key in a storage area.
+ * @param area the storage area to get listeners for
+ * @param key the key to get listeners for
+ * @returns a set of listeners
+ */
 const getListeners = (area: StorageArea, key: string): Set<StorageListener> => {
   let areaSubscribers = subscribers.get(area);
   if (!areaSubscribers) {
@@ -23,6 +30,14 @@ const getListeners = (area: StorageArea, key: string): Set<StorageListener> => {
   return listeners;
 };
 
+/**
+ *
+ * Subscribe to a key in a storage area for changes.
+ * @param area the storage area to subscribe to
+ * @param key the key to subscribe to
+ * @param listener the listener to call when the key is changed
+ * @returns a function to unsubscribe from the subscription
+ */
 export const subscribe = (
   area: StorageArea,
   key: string,
@@ -52,7 +67,13 @@ export const subscribe = (
   };
 };
 
-export function emit(event: StorageChangeEvent): void {
+/**
+ *
+ * Emit a storage change event to all subscribers.
+ * @param event the event to emit
+ * @returns void
+ */
+export const emit = (event: StorageChangeEvent): void => {
   const areaSubscribers = subscribers.get(event.area);
 
   if (!areaSubscribers) {
@@ -73,4 +94,4 @@ export function emit(event: StorageChangeEvent): void {
       console.error("[nanostorage] Listener threw:", err);
     }
   }
-}
+};

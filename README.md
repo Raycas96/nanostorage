@@ -4,21 +4,22 @@
 [![bundle size core gzip](https://img.shields.io/badge/core%20gzip-997B-brightgreen)](https://www.npmjs.com/package/@raycas/nanostorage)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
-Tiny, zero-runtime-dependency storage sync for modern apps.
+Tiny, zero-runtime-dependency reactivity layer for `localStorage` and `sessionStorage`.
 
-`nanostorage` makes `localStorage` and `sessionStorage` reactive:
+`nanostorage` keeps storage in sync:
 
-- in the same tab (immediate listeners),
+- in the same tab (immediate notifications),
 - across tabs (via `BroadcastChannel`),
 - and in React 18+ (via `useSyncExternalStore`).
 
-## Why nanostorage
+## Features
 
-`nanostorage` focuses on three pain points:
-
-1. **Same-tab updates:** native `storage` events do not fire in the same tab where writes happen.
-2. **sessionStorage cross-tab sync:** browsers do not provide this natively; `nanostorage` normalizes it.
-3. **SSR safety:** importing and using core/react APIs does not crash in server environments.
+- zero runtime dependencies
+- SSR-safe imports and guarded browser APIs
+- same-tab + cross-tab propagation
+- loop protection via source tab ID
+- `localStorage` and `sessionStorage` support
+- React adapter for ergonomic state usage
 
 ## Installation
 
@@ -26,7 +27,37 @@ Tiny, zero-runtime-dependency storage sync for modern apps.
 npm install @raycas/nanostorage
 ```
 
-## React Usage (TypeScript)
+## Quick Start (Core)
+
+```ts
+import {
+	initNanoStorage,
+	readRawValue,
+	removeKeyFromStorage,
+	watchAll,
+	watchKey,
+	writeRawValue,
+} from "@raycas/nanostorage/core";
+
+initNanoStorage();
+
+const stopThemeWatch = watchKey("theme", "local", (event) => {
+	console.log("theme changed:", event.oldValue, "->", event.newValue);
+});
+
+const stopAllLocalWatch = watchAll("local", (event) => {
+	console.log(`[${event.area}] ${event.key}:`, event.oldValue, "->", event.newValue);
+});
+
+writeRawValue("theme", "dark", "local");
+console.log(readRawValue("theme", "local")); // "dark"
+removeKeyFromStorage("theme", "local");
+
+stopThemeWatch();
+stopAllLocalWatch();
+```
+
+## React Usage
 
 ```tsx
 import { useNanoStorage } from "@raycas/nanostorage/react";
@@ -59,52 +90,22 @@ const [token, setToken] = useNanoStorage<string | null>("auth-token", null, {
 });
 ```
 
-## Vanilla Usage (TypeScript)
+## How Cross-Tab Sync Works
 
-```ts
-import {
-	initNanoStorage,
-	readRawValue,
-	removeKeyFromStorage,
-	watchKey,
-	writeRawValue,
-} from "@raycas/nanostorage/core";
-
-initNanoStorage();
-
-const unsubscribe = watchKey("theme", "local", (event) => {
-	console.log("theme changed", event.oldValue, "->", event.newValue);
-});
-
-writeRawValue("theme", "dark", "local");
-console.log(readRawValue("theme", "local")); // "dark"
-removeKeyFromStorage("theme", "local");
-
-unsubscribe();
-```
-
-## sessionStorage Cross-Tab Sync
-
-`sessionStorage` sync across tabs is a first-class behavior in this library.
+`nanostorage` emits changes locally, then rebroadcasts them through `BroadcastChannel`.  
+Other tabs apply the mutation once and do not rebroadcast it again.
 
 ```ts
 watchKey("token", "session", (event) => {
 	console.log("session token updated:", event.newValue);
 });
-```
 
-When one tab writes with:
-
-```ts
 writeRawValue("token", "abc", "session");
 ```
 
-other tabs on the same origin receive exactly one update (loop-protected by source tab ID).
+## SSR Safety
 
-## SSR
-
-`nanostorage` is safe to import in SSR runtimes (Next.js, Remix, Node-based rendering).  
-Browser-only APIs (`window`, `Storage`, `BroadcastChannel`) are guarded before use.
+Importing `@raycas/nanostorage/core` and `@raycas/nanostorage/react` is safe in SSR runtimes (Next.js, Remix, Node-based rendering). Browser-only APIs (`window`, `Storage`, `BroadcastChannel`) are guarded before use.
 
 ## API Reference
 
@@ -114,9 +115,10 @@ Browser-only APIs (`window`, `Storage`, `BroadcastChannel`) are guarded before u
 | --- | --- | --- |
 | `initNanoStorage` | `() => void` | Initializes storage patching and broadcast listeners once |
 | `watchKey` | `(key: string, area: "local" \| "session", listener: (event: StorageChangeEvent) => void) => () => void` | Unsubscribe function |
+| `watchAll` | `(area: "local" \| "session", listener: (event: StorageChangeEvent) => void) => () => void` | Unsubscribe function for all keys in area |
 | `readRawValue` | `(key: string, area: "local" \| "session") => string \| null` | Raw value or `null` |
-| `writeRawValue` | `(key: string, value: string, area: "local" \| "session") => void` | Writes raw value + emits updates |
-| `removeKeyFromStorage` | `(key: string, area: "local" \| "session") => void` | Removes key + emits updates |
+| `writeRawValue` | `(key: string, value: string, area: "local" \| "session") => void` | Writes raw value and emits updates |
+| `removeKeyFromStorage` | `(key: string, area: "local" \| "session") => void` | Removes key and emits updates |
 
 Core types:
 
@@ -129,18 +131,25 @@ Core types:
 
 | Function | Signature | Returns |
 | --- | --- | --- |
-| `useNanoStorage` | `<T>(key: string, initialValue: T, options?: UseNanoStorageOptions<T>) => [T \| null, (value: T \| ((prev: T \| null) => T)) => void, () => void]` | Tuple of current value, setter, and remover |
+| `useNanoStorage` | `<T>(key: string, initialValue: T, options?: UseNanoStorageOptions<T>) => [T \| null, (value: T \| ((prev: T \| null) => T)) => void, () => void]` | Tuple of value, setter, and remover |
 
 ## Browser Compatibility
 
-`nanostorage` depends on `BroadcastChannel` for cross-tab messaging.
-
-| Feature | Baseline |
+| Feature | Notes |
 | --- | --- |
-| `BroadcastChannel` | Widely available in modern browsers (baseline around 2022) |
-| `localStorage` / `sessionStorage` | Standard web platform APIs |
+| `BroadcastChannel` | Required for cross-tab sync, widely available in modern browsers |
+| `localStorage` / `sessionStorage` | Standard Web APIs |
 
-If `BroadcastChannel` is unavailable, same-tab reactivity still works; cross-tab sync is skipped gracefully.
+If `BroadcastChannel` is unavailable, same-tab reactivity still works and cross-tab propagation is skipped gracefully.
+
+## Contributing
+
+```bash
+npm run lint
+npm run typecheck
+npm run test:unit
+npm run test:e2e
+```
 
 ## License
 

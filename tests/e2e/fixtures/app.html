@@ -8,7 +8,9 @@
   <body>
     <div id="local-value">-</div>
     <div id="session-value">-</div>
+    <div id="local-watchall-last-key">-</div>
     <button type="button" id="set-local">Set local:theme=dark</button>
+    <button type="button" id="set-local-user">Set local:user=ray</button>
     <button type="button" id="remove-local">Remove local:theme</button>
     <button type="button" id="set-session">Set session:token=abc</button>
     <button type="button" id="remove-session">Remove session:token</button>
@@ -17,6 +19,7 @@
       import {
         initNanoStorage,
         removeKeyFromStorage,
+        watchAll,
         watchKey,
         writeRawValue,
       } from "/dist/core/index.mjs";
@@ -25,6 +28,7 @@
 
       const localDiv = document.getElementById("local-value");
       const sessionDiv = document.getElementById("session-value");
+      const localWatchAllLastKeyDiv = document.getElementById("local-watchall-last-key");
 
       const updateLocal = () => {
         localDiv.textContent = localStorage.getItem("theme") ?? "null";
@@ -35,11 +39,16 @@
 
       watchKey("theme", "local", updateLocal);
       watchKey("token", "session", updateSession);
+      watchAll("local", (event) => {
+        localWatchAllLastKeyDiv.textContent = event.key;
+      });
       updateLocal();
       updateSession();
 
       document.getElementById("set-local").onclick = () =>
         writeRawValue("theme", "dark", "local");
+      document.getElementById("set-local-user").onclick = () =>
+        writeRawValue("user", "ray", "local");
       document.getElementById("remove-local").onclick = () =>
         removeKeyFromStorage("theme", "local");
       document.getElementById("set-session").onclick = () =>

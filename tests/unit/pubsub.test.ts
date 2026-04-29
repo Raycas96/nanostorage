@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { emit, subscribe } from "@/core/pubsub";
+import { emit, subscribe, subscribeAll } from "@/core/pubsub";
 import { StorageAreaValues, type StorageChangeEvent } from "@/types";
 
 function createEvent(
@@ -47,6 +47,52 @@ describe("core/pubsub", () => {
 		emit(createEvent({ area: StorageAreaValues.SESSION }));
 
 		expect(listener).not.toHaveBeenCalled();
+	});
+
+	it("subscribeAll notifies for every key in the same area", () => {
+		const listener = vi.fn();
+		const firstEvent = createEvent({ key: "theme" });
+		const secondEvent = createEvent({ key: "user" });
+
+		subscribeAll(StorageAreaValues.LOCAL, listener);
+		emit(firstEvent);
+		emit(secondEvent);
+
+		expect(listener).toHaveBeenCalledTimes(2);
+		expect(listener).toHaveBeenNthCalledWith(1, firstEvent);
+		expect(listener).toHaveBeenNthCalledWith(2, secondEvent);
+	});
+
+	it("subscribeAll does not notify for a different area", () => {
+		const listener = vi.fn();
+
+		subscribeAll(StorageAreaValues.LOCAL, listener);
+		emit(createEvent({ area: StorageAreaValues.SESSION }));
+
+		expect(listener).not.toHaveBeenCalled();
+	});
+
+	it("subscribeAll unsubscribe is idempotent", () => {
+		const listener = vi.fn();
+		const unsubscribe = subscribeAll(StorageAreaValues.LOCAL, listener);
+
+		expect(() => {
+			unsubscribe();
+			unsubscribe();
+		}).not.toThrow();
+
+		emit(createEvent());
+		expect(listener).not.toHaveBeenCalled();
+	});
+
+	it("deduplicates notifications when same listener is on key and wildcard", () => {
+		const listener = vi.fn();
+
+		subscribe(StorageAreaValues.LOCAL, "theme", listener);
+		subscribeAll(StorageAreaValues.LOCAL, listener);
+		emit(createEvent({ key: "theme" }));
+
+		expect(listener).toHaveBeenCalledOnce();
 	});
 
 	it("unsubscribe is idempotent when called twice", () => {

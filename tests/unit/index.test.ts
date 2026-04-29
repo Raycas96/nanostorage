@@ -115,6 +115,37 @@ describe("core/index", () => {
 		warnSpy.mockRestore();
 	});
 
+	it("watchAll observes multiple keys in the selected area", async () => {
+		const { watchAll, writeRawValue } = await import("@/core/index");
+		const handler = vi.fn();
+		const unsubscribe = watchAll(StorageAreaValues.LOCAL, handler);
+
+		writeRawValue("theme", "dark", StorageAreaValues.LOCAL);
+		writeRawValue("user", "ray", StorageAreaValues.LOCAL);
+
+		expect(handler).toHaveBeenCalledTimes(2);
+		expect(handler).toHaveBeenNthCalledWith(
+			1,
+			expect.objectContaining({
+				key: "theme",
+				newValue: "dark",
+				area: StorageAreaValues.LOCAL,
+			}),
+		);
+		expect(handler).toHaveBeenNthCalledWith(
+			2,
+			expect.objectContaining({
+				key: "user",
+				newValue: "ray",
+				area: StorageAreaValues.LOCAL,
+			}),
+		);
+
+		unsubscribe();
+		writeRawValue("theme", "light", StorageAreaValues.LOCAL);
+		expect(handler).toHaveBeenCalledTimes(2);
+	});
+
 	it("readRawValue returns null when window is unavailable", async () => {
 		const { readRawValue } = await import("@/core/index");
 

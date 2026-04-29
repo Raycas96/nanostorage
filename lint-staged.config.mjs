@@ -1,7 +1,11 @@
 import { readFileSync } from "node:fs";
+import path from "node:path";
 
 const quoteFiles = (files) =>
-	files.map((file) => `"${file.replace(/"/g, '\\"')}"`).join(" ");
+	files
+		.map((file) => path.relative(process.cwd(), file))
+		.map((file) => `"${file.replace(/"/g, '\\"')}"`)
+		.join(" ");
 
 const isDeclarationFile = (file) => file.endsWith(".d.ts");
 
@@ -24,7 +28,7 @@ const config = {
 
 		return `biome format --write ${quoteFiles(files)}`;
 	},
-	"*.{json,md,css,scss}": (files) => {
+	"*.{json,css,scss}": (files) => {
 		if (files.length === 0) return [];
 
 		return `biome format --write ${quoteFiles(files)}`;

@@ -1,7 +1,7 @@
 import type { StorageArea, UnsubscribeFn } from "@/types";
 import { onBroadcast } from "./channel";
 import { patchStorage } from "./patch";
-import { subscribe } from "./pubsub";
+import { subscribe, subscribeAll } from "./pubsub";
 import { emitStorageMutation, getStorage, mutateStorage } from "./runtime";
 
 /**
@@ -67,6 +67,20 @@ export function watchKey(
 ): UnsubscribeFn {
 	initNanoStorage();
 	return subscribe(area, key, listener);
+}
+
+/**
+ * Watch all keys in a storage area for changes.
+ * @param area
+ * @param listener
+ * @returns Unsubscribe function
+ */
+export function watchAll(
+	area: StorageArea,
+	listener: Parameters<typeof subscribeAll>[1],
+): UnsubscribeFn {
+	initNanoStorage();
+	return subscribeAll(area, listener);
 }
 
 /**

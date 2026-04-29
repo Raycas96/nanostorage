@@ -41,6 +41,27 @@ test.describe("Cross-tab localStorage sync", () => {
 
 		await context.close();
 	});
+
+	test("watchAll in Tab B receives cross-tab updates for non-watched key", async ({
+		browser,
+	}) => {
+		const context = await browser.newContext();
+		const tabA = await context.newPage();
+		const tabB = await context.newPage();
+
+		await tabA.goto("/tests/e2e/fixtures/app.html");
+		await tabB.goto("/tests/e2e/fixtures/app.html");
+
+		await expect(tabB.locator("#local-watchall-last-key")).toHaveText("-");
+
+		await tabA.click("#set-local-user");
+
+		await expect(tabB.locator("#local-watchall-last-key")).toHaveText("user", {
+			timeout: 3000,
+		});
+
+		await context.close();
+	});
 });
 
 test.describe("Cross-tab sessionStorage sync", () => {

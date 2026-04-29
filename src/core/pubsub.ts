@@ -6,6 +6,7 @@ import type {
 } from "@/types";
 
 const subscribers = new Map<StorageArea, Map<string, Set<StorageListener>>>();
+const ALL_KEYS = "*";
 
 /**
  *
@@ -69,6 +70,18 @@ export const subscribe = (
 
 /**
  *
+ * Subscribe to all keys in a storage area for changes.
+ * @param area the storage area to subscribe to
+ * @param listener the listener to call when any key is changed
+ * @returns a function to unsubscribe from the subscription
+ */
+export const subscribeAll = (
+	area: StorageArea,
+	listener: StorageListener,
+): UnsubscribeFn => subscribe(area, ALL_KEYS, listener);
+
+/**
+ *
  * Emit a storage change event to all subscribers.
  * @param event the event to emit
  * @returns void
@@ -80,7 +93,21 @@ export const emit = (event: StorageChangeEvent): void => {
 		return;
 	}
 
-	const listeners = areaSubscribers.get(event.key);
+	const listeners = new Set<StorageListener>();
+	const keyListeners = areaSubscribers.get(event.key);
+	const wildcardListeners = areaSubscribers.get(ALL_KEYS);
+
+	if (keyListeners) {
+		for (const listener of keyListeners) {
+			listeners.add(listener);
+		}
+	}
+
+	if (wildcardListeners) {
+		for (const listener of wildcardListeners) {
+			listeners.add(listener);
+		}
+	}
 
 	if (!listeners || listeners.size === 0) {
 		return;

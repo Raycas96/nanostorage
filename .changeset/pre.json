@@ -4,5 +4,5 @@
 	"initialVersions": {
 		"@raycas/nanostorage": "0.0.1-beta.1"
 	},
-	"changesets": ["watchall-beta"]
+	"changesets": ["shaky-canyons-say", "watchall-beta"]
 }

@@ -1,5 +1,11 @@
 # @raycas/nanostorage
 
+## 0.1.0-beta.3
+
+### Patch Changes
+
+- Refactor React adapter into smaller modules without changing the public API.
+
 ## 0.1.0-beta.2
 
 ### Minor Changes

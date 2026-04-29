@@ -12,6 +12,10 @@
 		"url": "https://github.com/Raycas96/nanostorage/issues"
 	},
 	"homepage": "https://github.com/Raycas96/nanostorage#readme",
+	"publishConfig": {
+		"access": "public",
+		"provenance": true
+	},
 	"type": "module",
 	"main": "./dist/core/index.cjs",
 	"module": "./dist/core/index.mjs",

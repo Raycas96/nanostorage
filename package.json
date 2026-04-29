@@ -52,7 +52,7 @@
 		"react"
 	],
 	"engines": {
-		"node": ">=18"
+		"node": ">=18.20.8"
 	},
 	"scripts": {
 		"build": "tsdown",

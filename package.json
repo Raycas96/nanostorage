@@ -1,6 +1,6 @@
 {
 	"name": "@raycas/nanostorage",
-	"version": "0.0.1-beta.0",
+	"version": "0.0.1-beta.1",
 	"description": "Tiny, zero-dependency localStorage/sessionStorage sync for same-tab and cross-tab updates.",
 	"license": "MIT",
 	"author": "raycas96",

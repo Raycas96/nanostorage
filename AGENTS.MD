@@ -75,7 +75,7 @@ Critical assertions:
 
 ## Tooling Contract
 
-- Build: `tsup`
+- Build: `tsdown`
 - Type check: `tsc --noEmit`
 - Lint/format: `biome`
 - Unit tests: `vitest`

@@ -1,4 +1,4 @@
-import { defineConfig } from "tsup";
+import { defineConfig } from "tsdown";
 
 export default defineConfig([
 	{
@@ -22,6 +22,8 @@ export default defineConfig([
 		sourcemap: true,
 		treeshake: true,
 		target: "es2020",
-		external: ["react", "react-dom"],
+		deps: {
+			neverBundle: ["react", "react-dom"],
+		},
 	},
 ]);

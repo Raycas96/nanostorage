@@ -27,8 +27,8 @@ jobs:
 
       - name: Print gzipped sizes
         run: |
-          echo "Core (bytes): $(gzip -c dist/core/index.js | wc -c)"
-          echo "React (bytes): $(gzip -c dist/react/index.js | wc -c)"
+          echo "Core (bytes): $(gzip -c dist/core/index.mjs | wc -c)"
+          echo "React (bytes): $(gzip -c dist/react/index.mjs | wc -c)"
 
       - name: Enforce bundlesize limits
         run: npm run size:check

@@ -14,22 +14,22 @@
 	"homepage": "https://github.com/Raycas96/nanostorage#readme",
 	"type": "module",
 	"main": "./dist/core/index.cjs",
-	"module": "./dist/core/index.js",
-	"types": "./dist/core/index.d.ts",
+	"module": "./dist/core/index.mjs",
+	"types": "./dist/core/index.d.mts",
 	"exports": {
 		".": {
-			"types": "./dist/core/index.d.ts",
-			"import": "./dist/core/index.js",
+			"types": "./dist/core/index.d.mts",
+			"import": "./dist/core/index.mjs",
 			"require": "./dist/core/index.cjs"
 		},
 		"./core": {
-			"types": "./dist/core/index.d.ts",
-			"import": "./dist/core/index.js",
+			"types": "./dist/core/index.d.mts",
+			"import": "./dist/core/index.mjs",
 			"require": "./dist/core/index.cjs"
 		},
 		"./react": {
-			"types": "./dist/react/index.d.ts",
-			"import": "./dist/react/index.js",
+			"types": "./dist/react/index.d.mts",
+			"import": "./dist/react/index.mjs",
 			"require": "./dist/react/index.cjs"
 		}
 	},
@@ -51,17 +51,17 @@
 		"node": ">=18"
 	},
 	"scripts": {
-		"build": "tsup",
-		"build:size": "tsup --config tsup.size.config.ts",
-		"dev": "tsup --watch",
+		"build": "tsdown",
+		"build:size": "tsdown --config tsdown.size.config.ts",
+		"dev": "tsdown --watch",
 		"test:unit": "vitest run",
 		"test:e2e": "playwright test",
 		"test": "npm run test:unit && npm run test:e2e",
 		"lint": "biome check .",
 		"format": "biome format --write .",
 		"typecheck": "tsc --noEmit",
-		"size:core": "gzip -c dist/core/index.js | wc -c",
-		"size:react": "gzip -c dist/react/index.js | wc -c",
+		"size:core": "gzip -c dist/core/index.mjs | wc -c",
+		"size:react": "gzip -c dist/react/index.mjs | wc -c",
 		"size:check": "bundlesize",
 		"size": "npm run build:size && npm run size:core && npm run size:react && npm run size:check",
 		"release": "changeset publish",
@@ -69,11 +69,11 @@
 	},
 	"bundlesize": [
 		{
-			"path": "./dist/core/index.js",
+			"path": "./dist/core/index.mjs",
 			"maxSize": "1 kB"
 		},
 		{
-			"path": "./dist/react/index.js",
+			"path": "./dist/react/index.mjs",
 			"maxSize": "2 kB"
 		}
 	],
@@ -98,7 +98,7 @@
 		"lint-staged": "^16.4.0",
 		"react": "^19.2.5",
 		"react-dom": "^19.2.5",
-		"tsup": "^8.5.1",
+		"tsdown": "^0.21.10",
 		"typescript": "^6.0.3",
 		"vitest": "^4.1.5"
 	}

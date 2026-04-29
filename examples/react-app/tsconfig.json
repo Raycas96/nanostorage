@@ -8,8 +8,6 @@
 		"strict": true,
 		"skipLibCheck": true,
 		"noEmit": true,
-		"ignoreDeprecations": "6.0",
-		"baseUrl": ".",
 		"paths": {
 			"@raycas96/nanostorage/react": ["../../src/react/index.ts"],
 			"@raycas96/nanostorage/core": ["../../src/core/index.ts"],

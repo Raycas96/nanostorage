@@ -1,0 +1,86 @@
+import { useCallback, useSyncExternalStore } from "react";
+import {
+	initNanoStorage,
+	readRawValue,
+	removeKeyFromStorage,
+	watchKey,
+	writeRawValue,
+} from "@/core";
+import {
+	StorageAreaValues,
+	type StorageListener,
+	type UseNanoStorageOptions,
+} from "@/types";
+
+import { defaultDeserializer, defaultSerializer } from "./serialization";
+import type { SetValueFn } from "./types";
+
+/**
+ * React hook to use nanostorage.
+ * @param key - The key to use for the storage.
+ * @param initialValue - The initial value to use for the storage.
+ * @param options - The options to use for the storage.
+ * @returns The value, set value function, and remove function.
+ */
+export function useNanoStorage<T>(
+	key: string,
+	initialValue: T,
+	options: UseNanoStorageOptions<T> = {},
+): [T | null, SetValueFn<T>, () => void] {
+	const area = options.area ?? StorageAreaValues.LOCAL;
+	const serializer = options.serializer ?? defaultSerializer<T>;
+	const deserializer = options.deserializer ?? defaultDeserializer<T>;
+
+	initNanoStorage();
+
+	const getSnapshot = (): T | null => {
+		const raw = readRawValue(key, area);
+		if (raw === null) {
+			return initialValue;
+		}
+
+		const value = deserializer(raw);
+		return value === null ? initialValue : value;
+	};
+
+	const getServerSnapshot = (): T | null => initialValue;
+
+	const subscribe = (onStoreChange: () => void): (() => void) => {
+		const listener: StorageListener = () => {
+			onStoreChange();
+		};
+		return watchKey(key, area, listener);
+	};
+
+	const value = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+
+	const setValue: SetValueFn<T> = useCallback(
+		(nextValueOrUpdater) => {
+			const rawPrev = readRawValue(key, area);
+			const prev =
+				rawPrev === null
+					? initialValue
+					: (deserializer(rawPrev) ?? initialValue);
+			const nextValue =
+				typeof nextValueOrUpdater === "function"
+					? (nextValueOrUpdater as (prev: T | null) => T)(prev)
+					: nextValueOrUpdater;
+
+			try {
+				const raw = serializer(nextValue);
+				writeRawValue(key, raw, area);
+			} catch {
+				console.error(
+					`Failed to serialize value for key ${key} in area ${area}`,
+				);
+			}
+		},
+		[key, area, serializer, deserializer, initialValue],
+	);
+
+	const remove = useCallback((): void => {
+		removeKeyFromStorage(key, area);
+	}, [key, area]);
+
+	return [value, setValue, remove];
+}

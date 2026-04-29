@@ -1,7 +1,7 @@
 # nanostorage
 
-[![npm version](https://img.shields.io/npm/v/@raycas96/nanostorage.svg)](https://www.npmjs.com/package/@raycas96/nanostorage)
-[![bundle size core gzip](https://img.shields.io/badge/core%20gzip-997B-brightgreen)](https://www.npmjs.com/package/@raycas96/nanostorage)
+[![npm version](https://img.shields.io/npm/v/@raycas/nanostorage.svg)](https://www.npmjs.com/package/@raycas/nanostorage)
+[![bundle size core gzip](https://img.shields.io/badge/core%20gzip-997B-brightgreen)](https://www.npmjs.com/package/@raycas/nanostorage)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
 Tiny, zero-runtime-dependency storage sync for modern apps.
@@ -23,13 +23,13 @@ Tiny, zero-runtime-dependency storage sync for modern apps.
 ## Installation
 
 ```bash
-npm install @raycas96/nanostorage
+npm install @raycas/nanostorage
 ```
 
 ## React Usage (TypeScript)
 
 ```tsx
-import { useNanoStorage } from "@raycas96/nanostorage/react";
+import { useNanoStorage } from "@raycas/nanostorage/react";
 
 function ThemeToggle() {
 	const [theme, setTheme, removeTheme] = useNanoStorage<string>("theme", "light");
@@ -68,7 +68,7 @@ import {
 	removeKeyFromStorage,
 	watchKey,
 	writeRawValue,
-} from "@raycas96/nanostorage/core";
+} from "@raycas/nanostorage/core";
 
 initNanoStorage();
 
@@ -108,7 +108,7 @@ Browser-only APIs (`window`, `Storage`, `BroadcastChannel`) are guarded before u
 
 ## API Reference
 
-### Core (`@raycas96/nanostorage/core`)
+### Core (`@raycas/nanostorage/core`)
 
 | Function | Signature | Returns |
 | --- | --- | --- |
@@ -125,7 +125,7 @@ Core types:
 - `StorageBroadcastMessage = { key; value; area; sourceTabId }`
 - `UseNanoStorageOptions<T> = { area?; serializer?; deserializer? }`
 
-### React (`@raycas96/nanostorage/react`)
+### React (`@raycas/nanostorage/react`)
 
 | Function | Signature | Returns |
 | --- | --- | --- |

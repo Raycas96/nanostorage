@@ -1,4 +1,4 @@
-import { useNanoStorage } from "@raycas96/nanostorage/react";
+import { useNanoStorage } from "@raycas/nanostorage/react";
 
 export function App() {
 	const [theme, setTheme, removeTheme] = useNanoStorage<string>(

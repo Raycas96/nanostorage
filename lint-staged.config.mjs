@@ -24,7 +24,7 @@ const config = {
 
 		return `biome format --write ${quoteFiles(files)}`;
 	},
-	"*.{json,md,css,scss,yml,yaml}": (files) => {
+	"*.{json,md,css,scss}": (files) => {
 		if (files.length === 0) return [];
 
 		return `biome format --write ${quoteFiles(files)}`;

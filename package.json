@@ -1,6 +1,6 @@
 {
-	"name": "@raycas96/nanostorage",
-	"version": "0.0.1",
+	"name": "@raycas/nanostorage",
+	"version": "0.0.1-beta.1",
 	"description": "Tiny, zero-dependency localStorage/sessionStorage sync for same-tab and cross-tab updates.",
 	"license": "MIT",
 	"author": "raycas96",
@@ -12,6 +12,10 @@
 		"url": "https://github.com/Raycas96/nanostorage/issues"
 	},
 	"homepage": "https://github.com/Raycas96/nanostorage#readme",
+	"publishConfig": {
+		"access": "public",
+		"provenance": true
+	},
 	"type": "module",
 	"main": "./dist/core/index.cjs",
 	"module": "./dist/core/index.mjs",

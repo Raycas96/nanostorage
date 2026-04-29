@@ -9,9 +9,9 @@
 		"skipLibCheck": true,
 		"noEmit": true,
 		"paths": {
-			"@raycas96/nanostorage/react": ["../../src/react/index.ts"],
-			"@raycas96/nanostorage/core": ["../../src/core/index.ts"],
-			"@raycas96/nanostorage": ["../../src/core/index.ts"],
+			"@raycas/nanostorage/react": ["../../src/react/index.ts"],
+			"@raycas/nanostorage/core": ["../../src/core/index.ts"],
+			"@raycas/nanostorage": ["../../src/core/index.ts"],
 			"@/types": ["../../src/core/types.ts"],
 			"@/core": ["../../src/core/index.ts"]
 		}

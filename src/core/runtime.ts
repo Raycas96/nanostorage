@@ -1,6 +1,6 @@
-import { TAB_ID, broadcast } from "./channel";
+import { type StorageArea, StorageAreaValues } from "@/types";
+import { broadcast, TAB_ID } from "./channel";
 import { emit } from "./pubsub";
-import { StorageArea, StorageAreaValues } from "@/types";
 
 /**
  *
@@ -8,19 +8,19 @@ import { StorageArea, StorageAreaValues } from "@/types";
  * @returns the storage or null if the window is not defined
  */
 export const getStorage = (area: StorageArea): Storage | null => {
-  if (typeof window === "undefined") {
-    return null;
-  }
+	if (typeof window === "undefined") {
+		return null;
+	}
 
-  if (area === StorageAreaValues.LOCAL) {
-    return window.localStorage;
-  }
+	if (area === StorageAreaValues.LOCAL) {
+		return window.localStorage;
+	}
 
-  if (area === StorageAreaValues.SESSION) {
-    return window.sessionStorage;
-  }
+	if (area === StorageAreaValues.SESSION) {
+		return window.sessionStorage;
+	}
 
-  return null;
+	return null;
 };
 
 /**
@@ -31,20 +31,20 @@ export const getStorage = (area: StorageArea): Storage | null => {
  * @returns the old value of the key
  */
 export const mutateStorage = (
-  storage: Storage,
-  key: string,
-  value: string | null,
+	storage: Storage,
+	key: string,
+	value: string | null,
 ): string | null => {
-  const oldValue = storage.getItem(key);
-  const nativeStorageProto = Object.getPrototypeOf(storage) as Storage;
+	const oldValue = storage.getItem(key);
+	const nativeStorageProto = Object.getPrototypeOf(storage) as Storage;
 
-  if (value === null) {
-    nativeStorageProto.removeItem.call(storage, key);
-  } else {
-    nativeStorageProto.setItem.call(storage, key, value);
-  }
+	if (value === null) {
+		nativeStorageProto.removeItem.call(storage, key);
+	} else {
+		nativeStorageProto.setItem.call(storage, key, value);
+	}
 
-  return oldValue;
+	return oldValue;
 };
 
 /**
@@ -57,26 +57,26 @@ export const mutateStorage = (
  * @returns void whether the mutation is from a broadcast
  */
 export const emitStorageMutation = (
-  area: StorageArea,
-  key: string,
-  newValue: string | null,
-  oldValue: string | null,
-  fromBroadcast: boolean,
+	area: StorageArea,
+	key: string,
+	newValue: string | null,
+	oldValue: string | null,
+	fromBroadcast: boolean,
 ): void => {
-  emit({
-    key,
-    newValue,
-    oldValue,
-    area,
-    sourceTabId: TAB_ID,
-  });
+	emit({
+		key,
+		newValue,
+		oldValue,
+		area,
+		sourceTabId: TAB_ID,
+	});
 
-  if (!fromBroadcast) {
-    broadcast({
-      key,
-      value: newValue,
-      area,
-      sourceTabId: TAB_ID,
-    });
-  }
+	if (!fromBroadcast) {
+		broadcast({
+			key,
+			value: newValue,
+			area,
+			sourceTabId: TAB_ID,
+		});
+	}
 };

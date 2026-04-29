@@ -9,10 +9,10 @@ const CHANNEL_NAME = "nanostorage:sync";
  * The ID of the current tab.
  */
 export const TAB_ID: string =
-  typeof globalThis.crypto !== "undefined" &&
-  typeof globalThis.crypto.randomUUID === "function"
-    ? globalThis.crypto.randomUUID()
-    : Math.random().toString(36).slice(2);
+	typeof globalThis.crypto !== "undefined" &&
+	typeof globalThis.crypto.randomUUID === "function"
+		? globalThis.crypto.randomUUID()
+		: Math.random().toString(36).slice(2);
 
 /**
  * The instance of the broadcast channel.
@@ -23,18 +23,18 @@ let channelInstance: BroadcastChannel | null = null;
  * Gets the instance of the broadcast channel.
  */
 export function getChannel(): BroadcastChannel | null {
-  if (
-    typeof window === "undefined" ||
-    typeof globalThis.BroadcastChannel === "undefined"
-  ) {
-    return null;
-  }
+	if (
+		typeof window === "undefined" ||
+		typeof globalThis.BroadcastChannel === "undefined"
+	) {
+		return null;
+	}
 
-  if (channelInstance === null) {
-    channelInstance = new globalThis.BroadcastChannel(CHANNEL_NAME);
-  }
+	if (channelInstance === null) {
+		channelInstance = new globalThis.BroadcastChannel(CHANNEL_NAME);
+	}
 
-  return channelInstance;
+	return channelInstance;
 }
 
 /**
@@ -43,11 +43,11 @@ export function getChannel(): BroadcastChannel | null {
  * @returns void
  */
 export function broadcast(message: StorageBroadcastMessage): void {
-  const channel = getChannel();
-  if (!channel) {
-    return;
-  }
-  channel.postMessage(message);
+	const channel = getChannel();
+	if (!channel) {
+		return;
+	}
+	channel.postMessage(message);
 }
 
 /**
@@ -56,25 +56,25 @@ export function broadcast(message: StorageBroadcastMessage): void {
  * @returns a function to unsubscribe from the broadcast channel
  */
 export function onBroadcast(
-  handler: (message: StorageBroadcastMessage) => void,
+	handler: (message: StorageBroadcastMessage) => void,
 ): () => void {
-  const channel = getChannel();
-  if (!channel) {
-    return () => {};
-  }
+	const channel = getChannel();
+	if (!channel) {
+		return () => {};
+	}
 
-  /**
-   *
-   * @param event the message event
-   * @returns void
-   */
-  const listener = (event: MessageEvent<StorageBroadcastMessage>) => {
-    if (event.data?.sourceTabId !== TAB_ID) {
-      handler(event.data);
-    }
-  };
+	/**
+	 *
+	 * @param event the message event
+	 * @returns void
+	 */
+	const listener = (event: MessageEvent<StorageBroadcastMessage>) => {
+		if (event.data?.sourceTabId !== TAB_ID) {
+			handler(event.data);
+		}
+	};
 
-  channel.addEventListener("message", listener);
+	channel.addEventListener("message", listener);
 
-  return () => channel.removeEventListener("message", listener);
+	return () => channel.removeEventListener("message", listener);
 }

@@ -1,69 +1,24 @@
-# nanostorage (WIP)
+# nanostorage
 
-Sub-1kb, zero-dependency, framework-agnostic storage sync for modern web apps.
+[![npm version](https://img.shields.io/npm/v/@raycas96/nanostorage.svg)](https://www.npmjs.com/package/@raycas96/nanostorage)
+[![bundle size core gzip](https://img.shields.io/badge/core%20gzip-997B-brightgreen)](https://www.npmjs.com/package/@raycas96/nanostorage)
+[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
-`nanostorage` solves one problem precisely: make `localStorage` and `sessionStorage` reactive in the same tab and across tabs, using modern browser APIs (`BroadcastChannel`) and a React 18+ adapter based on `useSyncExternalStore`.
+Tiny, zero-runtime-dependency storage sync for modern apps.
 
-## Blueprint Status
+`nanostorage` makes `localStorage` and `sessionStorage` reactive:
 
-- **Blueprint version:** `1.0.0-blueprint`
-- **Current stage:** architecture and docs aligned to production blueprint
-- **License:** MIT
+- in the same tab (immediate listeners),
+- across tabs (via `BroadcastChannel`),
+- and in React 18+ (via `useSyncExternalStore`).
 
-## Philosophy and Scope
+## Why nanostorage
 
-### In Scope
+`nanostorage` focuses on three pain points:
 
-| Feature | Rationale |
-|---|---|
-| Sub-1kb core (gzipped) | Win on bundle size |
-| Same-tab local/session listeners | Native `storage` event is incomplete |
-| Cross-tab local/session sync | `BroadcastChannel` based |
-| React 18+ adapter | `useSyncExternalStore` avoids tearing/hydration issues |
-| SSR safety | Must not crash in Next.js/Remix/Node import paths |
-| TypeScript generics | Strongly typed reads/writes |
-| Auto JSON serialization | `JSON.stringify`/`JSON.parse` with safe fallback |
-| Zero runtime dependencies | No utility/runtime deps |
-
-### Out of Scope (v1 hard limits)
-
-| Feature | Reason |
-|---|---|
-| IE11 / legacy polyfills | Outdated target |
-| IndexedDB/cookies/cache storage | Mission creep |
-| Deep merge/conflict resolution | Not a CRDT library |
-| State manager patterns | Not Redux/Zustand |
-| Vue/Svelte/Angular adapters | Post-MVP |
-| Encryption/compression | Out of mission |
-| Storage quota management | Out of mission |
-| `clear()` full wipe broadcasting | Intentionally omitted in v1 |
-
-## Repository Structure
-
-```text
-nanostorage/
-├── src/
-│   ├── core/
-│   │   ├── types.ts
-│   │   ├── channel.ts
-│   │   ├── patch.ts
-│   │   ├── pubsub.ts
-│   │   └── index.ts
-│   └── react/
-│       └── index.ts
-├── tests/
-│   ├── unit/
-│   └── e2e/
-├── dist/
-├── biome.json
-├── tsconfig.json
-├── tsup.config.ts
-├── vitest.config.ts
-├── playwright.config.ts
-├── package.json
-├── CHANGELOG.md
-└── README.md
-```
+1. **Same-tab updates:** native `storage` events do not fire in the same tab where writes happen.
+2. **sessionStorage cross-tab sync:** browsers do not provide this natively; `nanostorage` normalizes it.
+3. **SSR safety:** importing and using core/react APIs does not crash in server environments.
 
 ## Installation
 
@@ -71,71 +26,123 @@ nanostorage/
 npm install @raycas96/nanostorage
 ```
 
-## Vanilla Usage
-
-```ts
-import {
-  initNanoStorage,
-  watchKey,
-  writeRawValue,
-  removeKeyFromStorage,
-} from "@raycas96/nanostorage/core";
-
-initNanoStorage();
-
-const unsub = watchKey("theme", "local", (event) => {
-  console.log("theme changed:", event.newValue);
-});
-
-writeRawValue("theme", "dark", "local");
-removeKeyFromStorage("theme", "local");
-unsub();
-```
-
-## React Usage
+## React Usage (TypeScript)
 
 ```tsx
 import { useNanoStorage } from "@raycas96/nanostorage/react";
 
 function ThemeToggle() {
-  const [theme, setTheme] = useNanoStorage<string>("theme", "light");
+	const [theme, setTheme, removeTheme] = useNanoStorage<string>("theme", "light");
 
-  return (
-    <button onClick={() => setTheme((prev) => (prev === "light" ? "dark" : "light"))}>
-      Current theme: {theme}
-    </button>
-  );
+	return (
+		<div>
+			<p>Theme: {theme}</p>
+			<button type="button" onClick={() => setTheme("dark")}>
+				Dark
+			</button>
+			<button type="button" onClick={() => setTheme((prev) => (prev === "dark" ? "light" : "dark"))}>
+				Toggle
+			</button>
+			<button type="button" onClick={removeTheme}>
+				Reset
+			</button>
+		</div>
+	);
 }
 ```
 
-## Session Sync Highlight
+Use session area:
 
 ```tsx
-const [token, setToken] = useNanoStorage<string>("auth-token", null, { area: "session" });
+const [token, setToken] = useNanoStorage<string | null>("auth-token", null, {
+	area: "session",
+});
 ```
 
-`sessionStorage` cross-tab sync is intentionally a first-class feature in this project.
+## Vanilla Usage (TypeScript)
 
-## Scripts and Tooling
+```ts
+import {
+	initNanoStorage,
+	readRawValue,
+	removeKeyFromStorage,
+	watchKey,
+	writeRawValue,
+} from "@raycas96/nanostorage/core";
 
-- Build: `tsup`
-- Type checking: `tsc --noEmit`
-- Unit tests: `vitest`
-- E2E tests: `playwright`
-- Lint/format: `biome`
-- Versioning: `changesets`
+initNanoStorage();
 
-## Bundle Size Target
+const unsubscribe = watchKey("theme", "local", (event) => {
+	console.log("theme changed", event.oldValue, "->", event.newValue);
+});
 
-```bash
-gzip -c dist/core/index.js | wc -c
+writeRawValue("theme", "dark", "local");
+console.log(readRawValue("theme", "local")); // "dark"
+removeKeyFromStorage("theme", "local");
+
+unsubscribe();
 ```
 
-Target: `< 1024` bytes for core gzipped output.
+## sessionStorage Cross-Tab Sync
 
-## Contributing
+`sessionStorage` sync across tabs is a first-class behavior in this library.
 
-Use `TODO.md` for execution tracking and `TODO.private.md` for detailed internal blueprint notes.
+```ts
+watchKey("token", "session", (event) => {
+	console.log("session token updated:", event.newValue);
+});
+```
 
-Contributor/agent constraints are defined in `AGENTS.MD`.
+When one tab writes with:
+
+```ts
+writeRawValue("token", "abc", "session");
+```
+
+other tabs on the same origin receive exactly one update (loop-protected by source tab ID).
+
+## SSR
+
+`nanostorage` is safe to import in SSR runtimes (Next.js, Remix, Node-based rendering).  
+Browser-only APIs (`window`, `Storage`, `BroadcastChannel`) are guarded before use.
+
+## API Reference
+
+### Core (`@raycas96/nanostorage/core`)
+
+| Function | Signature | Returns |
+| --- | --- | --- |
+| `initNanoStorage` | `() => void` | Initializes storage patching and broadcast listeners once |
+| `watchKey` | `(key: string, area: "local" \| "session", listener: (event: StorageChangeEvent) => void) => () => void` | Unsubscribe function |
+| `readRawValue` | `(key: string, area: "local" \| "session") => string \| null` | Raw value or `null` |
+| `writeRawValue` | `(key: string, value: string, area: "local" \| "session") => void` | Writes raw value + emits updates |
+| `removeKeyFromStorage` | `(key: string, area: "local" \| "session") => void` | Removes key + emits updates |
+
+Core types:
+
+- `StorageArea = "local" | "session"`
+- `StorageChangeEvent = { key; oldValue; newValue; area; sourceTabId }`
+- `StorageBroadcastMessage = { key; value; area; sourceTabId }`
+- `UseNanoStorageOptions<T> = { area?; serializer?; deserializer? }`
+
+### React (`@raycas96/nanostorage/react`)
+
+| Function | Signature | Returns |
+| --- | --- | --- |
+| `useNanoStorage` | `<T>(key: string, initialValue: T, options?: UseNanoStorageOptions<T>) => [T \| null, (value: T \| ((prev: T \| null) => T)) => void, () => void]` | Tuple of current value, setter, and remover |
+
+## Browser Compatibility
+
+`nanostorage` depends on `BroadcastChannel` for cross-tab messaging.
+
+| Feature | Baseline |
+| --- | --- |
+| `BroadcastChannel` | Widely available in modern browsers (baseline around 2022) |
+| `localStorage` / `sessionStorage` | Standard web platform APIs |
+
+If `BroadcastChannel` is unavailable, same-tab reactivity still works; cross-tab sync is skipped gracefully.
+
+## License
+
+MIT
 

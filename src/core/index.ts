@@ -1,8 +1,8 @@
+import type { StorageArea, UnsubscribeFn } from "@/types";
 import { onBroadcast } from "./channel";
 import { patchStorage } from "./patch";
 import { subscribe } from "./pubsub";
 import { emitStorageMutation, getStorage, mutateStorage } from "./runtime";
-import type { StorageArea, UnsubscribeFn } from "@/types";
 
 /**
  * this variabile is used to track if the nano storage has been initialized
@@ -19,19 +19,19 @@ let initialized = false;
  * @returns void
  */
 const applyMutation = (
-  area: StorageArea,
-  key: string,
-  value: string | null,
-  fromBroadcast: boolean,
+	area: StorageArea,
+	key: string,
+	value: string | null,
+	fromBroadcast: boolean,
 ): void => {
-  const storage = getStorage(area);
+	const storage = getStorage(area);
 
-  if (!storage) {
-    return;
-  }
+	if (!storage) {
+		return;
+	}
 
-  const oldValue = mutateStorage(storage, key, value);
-  emitStorageMutation(area, key, value, oldValue, fromBroadcast);
+	const oldValue = mutateStorage(storage, key, value);
+	emitStorageMutation(area, key, value, oldValue, fromBroadcast);
 };
 
 /**
@@ -40,17 +40,17 @@ const applyMutation = (
  * @returns void
  */
 export function initNanoStorage(): void {
-  if (initialized) {
-    return;
-  }
+	if (initialized) {
+		return;
+	}
 
-  initialized = true;
-  patchStorage("local");
-  patchStorage("session");
+	initialized = true;
+	patchStorage("local");
+	patchStorage("session");
 
-  onBroadcast((message) => {
-    applyMutation(message.area, message.key, message.value, true);
-  });
+	onBroadcast((message) => {
+		applyMutation(message.area, message.key, message.value, true);
+	});
 }
 
 /**
@@ -61,12 +61,12 @@ export function initNanoStorage(): void {
  * @returns Unsubscribe function
  */
 export function watchKey(
-  key: string,
-  area: StorageArea,
-  listener: Parameters<typeof subscribe>[2],
+	key: string,
+	area: StorageArea,
+	listener: Parameters<typeof subscribe>[2],
 ): UnsubscribeFn {
-  initNanoStorage();
-  return subscribe(area, key, listener);
+	initNanoStorage();
+	return subscribe(area, key, listener);
 }
 
 /**
@@ -76,12 +76,12 @@ export function watchKey(
  * @returns Raw value or null if the storage is not available
  */
 export function readRawValue(key: string, area: StorageArea): string | null {
-  const storage = getStorage(area);
-  if (!storage) {
-    return null;
-  }
+	const storage = getStorage(area);
+	if (!storage) {
+		return null;
+	}
 
-  return storage.getItem(key);
+	return storage.getItem(key);
 }
 
 /**
@@ -92,12 +92,12 @@ export function readRawValue(key: string, area: StorageArea): string | null {
  * @returns void
  */
 export function writeRawValue(
-  key: string,
-  value: string,
-  area: StorageArea,
+	key: string,
+	value: string,
+	area: StorageArea,
 ): void {
-  initNanoStorage();
-  applyMutation(area, key, value, false);
+	initNanoStorage();
+	applyMutation(area, key, value, false);
 }
 
 /**
@@ -107,6 +107,6 @@ export function writeRawValue(
  * @returns void
  */
 export function removeKeyFromStorage(key: string, area: StorageArea): void {
-  initNanoStorage();
-  applyMutation(area, key, null, false);
+	initNanoStorage();
+	applyMutation(area, key, null, false);
 }

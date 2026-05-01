@@ -1,8 +1,0 @@
-{
-	"mode": "pre",
-	"tag": "beta",
-	"initialVersions": {
-		"@raycas/nanostorage": "0.0.1-beta.1"
-	},
-	"changesets": ["shaky-canyons-say", "watchall-beta"]
-}

@@ -1,5 +1,11 @@
 # @raycas/nanostorage
 
+## 0.1.1
+
+### Patch Changes
+
+- Lower the minimum supported Node.js engine from `24.15.0` to `20.10.0` to keep compatibility with active LTS environments while still dropping Node 18 and bump deps
+
 ## 0.1.0
 
 ### Minor Changes

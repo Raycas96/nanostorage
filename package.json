@@ -94,16 +94,16 @@
 		"@changesets/cli": "^2.31.0",
 		"@playwright/test": "^1.60.0",
 		"@types/node": "latest",
-		"@types/react": "^19.2.14",
+		"@types/react": "^19.2.15",
 		"@types/react-dom": "^19.2.3",
 		"bundlesize": "^0.18.2",
 		"happy-dom": "^20.9.0",
 		"husky": "^9.1.7",
-		"lint-staged": "^17.0.4",
+		"lint-staged": "^17.0.5",
 		"react": "^19.2.6",
 		"react-dom": "^19.2.6",
 		"tsdown": "^0.22.0",
 		"typescript": "^6.0.3",
-		"vitest": "^4.1.6"
+		"vitest": "^4.1.7"
 	}
 }
